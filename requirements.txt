@@ -1,0 +1,32 @@
+# Web framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-dotenv>=1.0.0
+
+# AI/LLM
+anthropic>=0.18.0
+
+# YouTube
+google-api-python-client>=2.118.0
+youtube-transcript-api>=0.6.2
+
+# Recipe scraping
+recipe-scrapers>=14.52.0
+
+# Instagram
+instaloader>=4.10.0
+
+# Database
+sqlalchemy[asyncio]>=2.0.25
+aiosqlite>=0.19.0
+
+# Data validation
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+
+# HTTP client
+httpx>=0.26.0
+
+# Video processing
+openai>=1.12.0
+moviepy>=1.0.3

@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Aggregator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      background: #2d3748;
+      color: white;
+      padding: 20px 0;
+      margin-bottom: 30px;
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 1.8rem; }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .tab.active {
+      background: white;
+      font-weight: 600;
+    }
+
+    .panel {
+      display: none;
+      background: white;
+      padding: 25px;
+      border-radius: 0 8px 8px 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .panel.active { display: block; }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="url"], textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    textarea { min-height: 150px; resize: vertical; }
+
+    button {
+      background: #4299e1;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover { background: #3182ce; }
+    button:disabled { background: #a0aec0; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #718096;
+    }
+
+    .btn-secondary:hover { background: #4a5568; }
+
+    .btn-notion {
+      background: #000;
+    }
+
+    .btn-notion:hover { background: #333; }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .recipes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .recipes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .recipe-card {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .recipe-card:hover { transform: translateY(-4px); }
+
+    .recipe-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #e2e8f0;
+    }
+
+    .recipe-card-body { padding: 15px; }
+
+    .recipe-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .recipe-card p {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .recipe-meta {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: #edf2f7;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: #4a5568;
+    }
+
+    .status-extracted { color: #38a169; }
+    .status-needs_review { color: #d69e2e; }
+    .status-verified { color: #3182ce; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    .modal.active { display: flex; align-items: center; justify-content: center; }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 700px;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 90%;
+      padding: 30px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #718096;
+      padding: 0;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .ingredient-list, .instruction-list {
+      margin: 15px 0;
+      padding-left: 20px;
+    }
+
+    .ingredient-list li { margin-bottom: 6px; }
+    .instruction-list li { margin-bottom: 12px; }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      color: #4a5568;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .alert-success { background: #c6f6d5; color: #276749; }
+    .alert-error { background: #fed7d7; color: #c53030; }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #718096;
+    }
+
+    .drop-zone {
+      border: 2px dashed #cbd5e0;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: #4299e1;
+    }
+
+    .source-link {
+      color: #4299e1;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #718096;
+    }
+
+    .search-bar input {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .notion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f7f6f3;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: #37352f;
+    }
+
+    .notion-badge.connected { background: #ddedea; color: #0f7b6c; }
+    .notion-badge.disconnected { background: #ffe2dd; color: #e03e3e; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Recipe Aggregator</h1>
+      <div id="notion-status" class="notion-badge disconnected">
+        <span>Notion: Not configured</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" data-tab="recipes">My Recipes</button>
+      <button class="tab" data-tab="add">Add Recipe</button>
+      <button class="tab" data-tab="import">Bulk Import</button>
+    </div>
+
+    <!-- Recipes Panel -->
+    <div id="recipes" class="panel active">
+      <div class="recipes-header">
+        <div class="search-bar">
+          <input type="text" id="search" placeholder="Search recipes...">
+        </div>
+        <button id="export-all-notion" class="btn-notion btn-small" style="display:none;">
+          Export All to Notion
+        </button>
+      </div>
+      <div id="recipes-container" class="recipes-grid">
+        <div class="loading">Loading recipes...</div>
+      </div>
+    </div>
+
+    <!-- Add Recipe Panel -->
+    <div id="add" class="panel">
+      <h2 style="margin-bottom: 20px;">Add Recipe from Caption</h2>
+      <div id="add-alert"></div>
+      <form id="add-form">
+        <div class="form-group">
+          <label for="source-url">Source URL</label>
+          <input type="url" id="source-url" placeholder="https://instagram.com/p/..." required>
+        </div>
+        <div class="form-group">
+          <label for="caption">Caption / Recipe Text</label>
+          <textarea id="caption" placeholder="Paste the recipe caption here..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="image-url">Image URL (optional)</label>
+          <input type="url" id="image-url" placeholder="https://...">
+        </div>
+        <button type="submit" id="add-btn">Extract Recipe</button>
+      </form>
+    </div>
+
+    <!-- Bulk Import Panel -->
+    <div id="import" class="panel">
+      <h2 style="margin-bottom: 20px;">Bulk Import from CSV</h2>
+      <p style="margin-bottom: 20px; color: #718096;">
+        Upload a CSV file with columns: <code>url</code>, <code>caption</code>, <code>image_url</code> (optional)
+      </p>
+      <div id="import-alert"></div>
+      <div class="drop-zone" id="drop-zone">
+        <p>Drag & drop CSV file here</p>
+        <p style="margin-top: 10px; color: #a0aec0;">or click to select</p>
+        <input type="file" id="csv-file" accept=".csv" style="display: none;">
+      </div>
+      <div id="import-status" style="margin-top: 20px;"></div>
+    </div>
+  </div>
+
+  <!-- Recipe Detail Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Recipe Title</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-actions" id="modal-actions"></div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:8000';
+    let allRecipes = [];
+    let notionConfigured = false;
+    let currentRecipeId = null;
+
+    // Check Notion status
+    async function checkNotionStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/api/recipes/notion/status`);
+        const data = await res.json();
+        notionConfigured = data.configured;
+
+        const badge = document.getElementById('notion-status');
+        const exportAllBtn = document.getElementById('export-all-notion');
+
+        if (notionConfigured) {
+          badge.className = 'notion-badge connected';
+          badge.innerHTML = '<span>Notion: Connected</span>';
+          exportAllBtn.style.display = 'block';
+        } else {
+          badge.className = 'notion-badge disconnected';
+          badge.innerHTML = '<span>Notion: Not configured</span>';
+          exportAllBtn.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Failed to check Notion status:', err);
+      }
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Load recipes
+    async function loadRecipes() {
+      const container = document.getElementById('recipes-container');
+      try {
+        const res = await fetch(`${API_BASE}/api/recipes`);
+        allRecipes = await res.json();
+        renderRecipes(allRecipes);
+      } catch (err) {
+        container.innerHTML = '<div class="empty-state">Failed to load recipes. Is the server running?</div>';
+      }
+    }
+
+    function renderRecipes(recipes) {
+      const container = document.getElementById('recipes-container');
+      if (recipes.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recipes yet. Add one!</div>';
+        return;
+      }
+
+      container.innerHTML = recipes.map(recipe => `
+        <div class="recipe-card" data-id="${recipe.id}">
+          <img src="${recipe.image_url || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e2e8f0%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2240%22>🍽️</text></svg>'}" alt="${recipe.title}">
+          <div class="recipe-card-body">
+            <h3>${recipe.title}</h3>
+            <p>${recipe.description || 'No description'}</p>
+            <div class="recipe-meta">
+              <span class="tag">${recipe.category}</span>
+              ${recipe.cuisine ? `<span class="tag">${recipe.cuisine}</span>` : ''}
+              <span class="status-${recipe.status}">${recipe.status.replace('_', ' ')}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Add click handlers
+      container.querySelectorAll('.recipe-card').forEach(card => {
+        card.addEventListener('click', () => showRecipe(card.dataset.id));
+      });
+    }
+
+    // Search
+    document.getElementById('search').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allRecipes.filter(r =>
+        r.title.toLowerCase().includes(query) ||
+        (r.description && r.description.toLowerCase().includes(query)) ||
+        (r.cuisine && r.cuisine.toLowerCase().includes(query))
+      );
+      renderRecipes(filtered);
+    });
+
+    // Show recipe modal
+    async function showRecipe(id) {
+      const recipe = allRecipes.find(r => r.id == id);
+      if (!recipe) return;
+
+      currentRecipeId = id;
+
+      document.getElementById('modal-title').textContent = recipe.title;
+
+      // Show actions
+      const actionsDiv = document.getElementById('modal-actions');
+      if (notionConfigured) {
+        actionsDiv.innerHTML = `
+          <button class="btn-notion btn-small" onclick="exportToNotion(${id})">
+            Export to Notion
+          </button>
+        `;
+      } else {
+        actionsDiv.innerHTML = '';
+      }
+
+      document.getElementById('modal-body').innerHTML = `
+        ${recipe.image_url ? `<img src="${recipe.image_url}" style="width:100%;max-height:300px;object-fit:cover;border-radius:8px;margin-bottom:20px;">` : ''}
+
+        <p>${recipe.description || ''}</p>
+
+        <a href="${recipe.source_url}" target="_blank" class="source-link">View original on ${recipe.source_platform}</a>
+
+        <div class="section-title">Ingredients</div>
+        <ul class="ingredient-list">
+          ${recipe.ingredients.map(i => `
+            <li>${i.quantity || ''} ${i.unit || ''} ${i.name}${i.notes ? ` (${i.notes})` : ''}</li>
+          `).join('')}
+        </ul>
+
+        <div class="section-title">Instructions</div>
+        <ol class="instruction-list">
+          ${recipe.instructions.map(step => `<li>${step}</li>`).join('')}
+        </ol>
+
+        ${recipe.servings ? `<p style="margin-top:20px;"><strong>Servings:</strong> ${recipe.servings}</p>` : ''}
+
+        <div style="margin-top:20px;">
+          ${recipe.tags.map(t => `<span class="tag">${t}</span>`).join(' ')}
+        </div>
+      `;
+
+      document.getElementById('modal').classList.add('active');
+    }
+
+    // Export to Notion
+    async function exportToNotion(id) {
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = 'Exporting...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/recipes/${id}/export/notion`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          btn.textContent = '✓ Exported!';
+          btn.style.background = '#38a169';
+        } else {
+          btn.textContent = 'Failed';
+          btn.style.background = '#e53e3e';
+          alert(data.detail || 'Export failed');
+        }
+      } catch (err) {
+        btn.textContent = 'Error';
+        btn.style.background = '#e53e3e';
+        alert('Failed to connect to server');
+      }
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Export to Notion';
+        btn.style.background = '';
+      }, 2000);
+    }
+
+    // Export all to Notion
+    document.getElementById('export-all-notion').addEventListener('click', async () => {
+      const btn = document.getElementById('export-all-notion');
+      btn.disabled = true;
+      btn.textContent = 'Exporting...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/recipes/export/notion/all`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          btn.textContent = `✓ Exported ${data.exported} recipes`;
+          btn.style.background = '#38a169';
+        } else {
+          btn.textContent = 'Failed';
+          alert(data.detail || 'Export failed');
+        }
+      } catch (err) {
+        btn.textContent = 'Error';
+        alert('Failed to connect to server');
+      }
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Export All to Notion';
+        btn.style.background = '';
+      }, 3000);
+    });
+
+    // Close modal
+    document.querySelector('.modal-close').addEventListener('click', () => {
+      document.getElementById('modal').classList.remove('active');
+    });
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+      if (e.target.id === 'modal') {
+        document.getElementById('modal').classList.remove('active');
+      }
+    });
+
+    // Add recipe form
+    document.getElementById('add-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('add-btn');
+      const alertDiv = document.getElementById('add-alert');
+
+      btn.disabled = true;
+      btn.textContent = 'Extracting...';
+      alertDiv.innerHTML = '';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/ingest/manual`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source_url: document.getElementById('source-url').value,
+            caption: document.getElementById('caption').value,
+            image_url: document.getElementById('image-url').value || null
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alertDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+          document.getElementById('add-form').reset();
+          loadRecipes();
+        } else {
+          alertDiv.innerHTML = `<div class="alert alert-error">${data.detail || data.message}</div>`;
+        }
+      } catch (err) {
+        alertDiv.innerHTML = `<div class="alert alert-error">Failed to connect to server</div>`;
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Extract Recipe';
+    });
+
+    // CSV upload
+    const dropZone = document.getElementById('drop-zone');
+    const csvInput = document.getElementById('csv-file');
+
+    dropZone.addEventListener('click', () => csvInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.endsWith('.csv')) {
+        uploadCSV(file);
+      }
+    });
+
+    csvInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        uploadCSV(e.target.files[0]);
+      }
+    });
+
+    async function uploadCSV(file) {
+      const alertDiv = document.getElementById('import-alert');
+      const statusDiv = document.getElementById('import-status');
+
+      alertDiv.innerHTML = '';
+      statusDiv.innerHTML = '<div class="loading">Processing CSV...</div>';
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/ingest/csv`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alertDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+          loadRecipes();
+        } else {
+          alertDiv.innerHTML = `<div class="alert alert-error">${data.detail || data.message}</div>`;
+        }
+      } catch (err) {
+        alertDiv.innerHTML = `<div class="alert alert-error">Failed to upload CSV</div>`;
+      }
+
+      statusDiv.innerHTML = '';
+      csvInput.value = '';
+    }
+
+    // Initial load
+    checkNotionStatus();
+    loadRecipes();
+  </script>
+</body>
+</html>
