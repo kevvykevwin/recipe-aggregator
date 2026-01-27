@@ -16,8 +16,8 @@ from pathlib import Path
 
 
 API_URL = "http://localhost:8000/api/ingest/csv"
-BATCH_SIZE = 10  # rows per batch (smaller to avoid rate limits)
-BATCH_DELAY = 60  # seconds between batches
+BATCH_SIZE = 5  # rows per batch (smaller to avoid rate limits)
+BATCH_DELAY = 120  # seconds between batches (2 minutes)
 
 
 def split_csv(filepath: Path, batch_size: int):
