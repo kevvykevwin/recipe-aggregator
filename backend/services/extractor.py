@@ -12,7 +12,7 @@ from backend.models.schemas import (
     RecipeCategory,
     GroceryCategory,
 )
-from backend.prompts.extraction import get_extraction_prompt
+from backend.prompts.extraction import EXTRACTION_SYSTEM_PROMPT, get_extraction_prompt
 
 settings = get_settings()
 
@@ -85,35 +85,41 @@ def _build_message_content(
 
     # Add URL-based image if provided
     if image_url:
-        content_blocks.append({
-            "type": "image",
-            "source": {
-                "type": "url",
-                "url": image_url,
-            },
-        })
+        content_blocks.append(
+            {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": image_url,
+                },
+            }
+        )
 
     # Add base64 frames (from video extraction)
     if base64_frames:
         for frame_b64 in base64_frames:
-            content_blocks.append({
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/jpeg",
-                    "data": frame_b64,
-                },
-            })
+            content_blocks.append(
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": frame_b64,
+                    },
+                }
+            )
 
     # If no images, just return the prompt as string
     if not content_blocks:
         return prompt
 
     # Add text prompt at the end
-    content_blocks.append({
-        "type": "text",
-        "text": prompt,
-    })
+    content_blocks.append(
+        {
+            "type": "text",
+            "text": prompt,
+        }
+    )
 
     return content_blocks
 
@@ -157,6 +163,7 @@ async def extract_recipe(
         message = client.messages.create(
             model=settings.claude_model,
             max_tokens=4096,
+            system=[{"type": "text", "text": EXTRACTION_SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
             messages=[{"role": "user", "content": message_content}],
         )
 
