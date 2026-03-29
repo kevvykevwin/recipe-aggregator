@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 from fastapi import FastAPI
+from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from backend.db.database import init_db
@@ -42,7 +42,10 @@ app.include_router(ingest.router)
 @app.get("/")
 async def root():
     """Serve the frontend."""
-    return FileResponse(FRONTEND_DIR / "index.html")
+    index_path = FRONTEND_DIR / "index.html"
+    if not index_path.is_file():
+        raise HTTPException(status_code=503, detail="Frontend bundle is unavailable")
+    return FileResponse(index_path)
 
 
 @app.get("/health")
