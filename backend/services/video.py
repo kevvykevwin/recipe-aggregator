@@ -67,7 +67,6 @@ def _extract_key_frames(video_path: Path, num_frames: int = 5) -> list[str]:
             with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as frame_file:
                 frame = clip.get_frame(ts)
                 # moviepy returns numpy array, save as image
-                from moviepy.video.io.bindings import mplfig_to_npimage
                 import numpy as np
                 from PIL import Image
 
