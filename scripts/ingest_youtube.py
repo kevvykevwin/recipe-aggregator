@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """CLI script for ingesting recipes from YouTube videos or playlists."""
 
+# ruff: noqa: E402
+
 import argparse
 import asyncio
 import sys

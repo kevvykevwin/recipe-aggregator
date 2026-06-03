@@ -118,7 +118,7 @@ def main():
 
     print()
     print("=" * 40)
-    print(f"Complete!")
+    print("Complete!")
     print(f"  Extracted: {total_success}")
     print(f"  Failed: {total_failed}")
 

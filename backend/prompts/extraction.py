@@ -22,22 +22,15 @@ REQUIRED OUTPUT FORMAT (JSON):
             "grocery_category": "one of: produce, meat, seafood, dairy, bakery, frozen, pantry, spices, condiments, beverages, other"
         }
     ],
-    "instructions": ["Step 1...", "Step 2...", ...],
-    "prep_time_minutes": integer or null,
-    "cook_time_minutes": integer or null,
-    "total_time_minutes": integer or null,
+    "instructions": ["Step 1...", "Step 2..."],
+    "prep_time_minutes": null,
+    "cook_time_minutes": null,
+    "total_time_minutes": null,
     "servings": "e.g., '4 servings' or '12 cookies'",
     "category": "one of: breakfast, lunch, dinner, snack, dessert, beverage, appetizer, side, technique, other",
     "cuisine": "e.g., Italian, Mexican, Asian, American, etc.",
     "tags": ["tag1", "tag2"],
-    "macros": {
-        "calories": integer or null,
-        "protein_g": float or null,
-        "carbs_g": float or null,
-        "fat_g": float or null,
-        "fiber_g": float or null,
-        "sodium_mg": float or null
-    } or null if no nutritional info available
+    "macros": null
 }
 
 GUIDELINES:
@@ -46,7 +39,7 @@ GUIDELINES:
 3. Assign appropriate grocery categories to help with shopping list organization
 4. Clean up instructions into clear, numbered steps
 5. Infer category from dish type (pasta dinner → dinner, muffins → breakfast/snack)
-6. Only include macros if explicitly mentioned in the content
+6. Only include macros if explicitly mentioned in the content. When available, use an object with calories, protein_g, carbs_g, fat_g, fiber_g, and sodium_mg fields; otherwise use null.
 7. For transcripts, filter out non-recipe content (greetings, sponsor mentions, etc.)
 8. For cooking techniques (knife skills, sauce making, etc.), use category "technique" and focus on clear step-by-step instructions. Ingredients may be minimal or examples.
 9. If extracting from an image, read all visible text carefully including handwritten notes
