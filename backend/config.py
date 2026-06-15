@@ -1,8 +1,15 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        str_strip_whitespace=True,
+    )
+
     # YouTube
     youtube_api_key: str = ""
 
@@ -24,10 +31,6 @@ class Settings(BaseSettings):
     notion_token: str = ""
     notion_cooking_page_id: str = ""
     notion_auto_sync: bool = False
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
 
 
 @lru_cache
